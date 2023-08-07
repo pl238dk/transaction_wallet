@@ -1,0 +1,190 @@
+{% extends 'template.jinja2' %}
+{% block head %}
+<style>
+#main {
+	background-color: #FFFFFF;
+	border-radius: 10px;
+}
+</style>
+{% endblock %}
+{% block body %}
+<div id='main' data-test='it works' class='container bg-light'>
+	<h1 class='text-center'>Option Purchase Tracker</h1>
+	<p class='text-center'>Keep track of important transactions. <a href='historical' target='_blank'>Historical</a></p>
+    <table class='table table-bordered table-striped'>
+        <tr>
+            <th>Symbol</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Strike</th>
+            <th>Expiration</th>
+            <th>Quantity</th>
+            <th>Cost Basis</th>
+            <th>Delete</th>
+        </tr>
+        {% for tx in transactions %}
+        <!-- {{ tx }} -->
+        <tr>
+            <td>{{ tx.symbol }}</td>
+            <td>{{ tx.account }}</td>
+            <td>{{ tx.contract_type }}</td>
+            <td>{{ "%.2f" | format(tx.strike) }}</td>
+            <td>{{ tx.expiration }}</td>
+            <td>{{ tx.tx_quantity }}</td>
+            <td>{{ "%.2f" | format(tx.tx_cost_basis) }}</td>
+            <td><button data-rowid='{{ tx.rid }}' data-account='{{ tx.account }}' onclick='javascript:delete_transaction(this)'>Delete</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if not transactions %}
+    <div class='text-center'><h3>Empty!</h3></div>
+    {% endif %}
+    <form onsubmit='javscript:add_transaction()'>
+    <table class='table table-bordered table-striped'>
+        <tr>
+            <td>Date Purchased</td>
+            <td><input required type='date' id='date' class='form-control' /></td>
+        </tr>
+        <tr>
+            <td>Action</td>
+            <td>
+                <select id='action' required class='form-control'>
+                    <option selected value='BTO'>Buy to Open</option>
+                    <option value='STC'>Sell to Close</option>
+                    <option value='STO'>Sell to Open</option>
+                    <option value='BTC'>Buy to Close</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Symbol</td>
+            <td><input required type='text' id='symbol' class='form-control' placeholder='e.g. AAPL' /></td>
+        </tr>
+        <tr>
+            <td>Account</td>
+            <td>
+                <select id='account' class='form-control'>
+                    <option value=''>N/A</option>
+                    {% for account in accounts %}
+                    <option value='{{ account.firm }} - {{ account.nickname }}'>{{ account.firm }} - {{ account.nickname }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Contract Type</td>
+            <td>
+                <select required id='contract_type' class='form-control'>
+                    <option selected value='CALL'>Call</option>
+                    <option value='PUT'>Put</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Strike</td>
+            <td><input required type='number' id='strike' min='1' step='0.01' class='form-control' /></td>
+        </tr>
+        <tr>
+            <td>Expiration</td>
+            <td><input required type='date' id='expiration' class='form-control' /></td>
+        </tr>
+        <tr>
+            <td>Quantity</td>
+            <td><input required type='number' id='tx_quantity' min='1' class='form-control' /></td>
+        </tr>
+        <tr>
+            <td>Total Price</td>
+            <td><input required type='number' id='tx_price' min='1' step='0.01' class='form-control' /></td>
+        </tr>
+        <tr>
+            <td>Add Transaction</td>
+            <td><input type='submit' value='Add Transaction' class='form-control' /></td>
+        </tr>
+    </table>
+    </form>
+</div>
+
+<img src onerror='javascript:getDate()'>
+<script>
+
+function getDate() {
+    var date = new Date();
+    var day = date.getDate();
+    var month = date.getMonth() + 1;
+    var year = date.getFullYear();
+    if (month < 10) month = "0" + month;
+    if (day < 10) day = "0" + day;
+    var today = year + "-" + month + "-" + day;       
+    document.getElementById("date").defaultValue = today;
+    return;
+}
+
+function test() {
+    alert('test');
+}
+
+function add_transaction() {
+    var tx_date = document.getElementById('date').value;
+    var action = document.getElementById('action').value;
+    var symbol = document.getElementById('symbol').value;
+    var account = document.getElementById('account').value;
+    var contract_type = document.getElementById('contract_type').value;
+    var strike = document.getElementById('strike').value;
+    var expiration = document.getElementById('expiration').value;
+    var tx_quantity = document.getElementById('tx_quantity').value;
+    var tx_price = document.getElementById('tx_price').value;
+    
+    let params_obj = {
+        'tx_date': tx_date,
+        'symbol': symbol,
+        'action': action,
+        'account': account,
+        'contract_type': contract_type,
+        'strike': strike,
+        'expiration': expiration,
+        'tx_quantity': tx_quantity,
+        'tx_price': tx_price
+    }
+    let options = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    };
+    let params = new URLSearchParams(params_obj);
+    fetch("/api/transaction/set?" + params, options)
+    .then((response) => response.json())
+    .then(data => {
+        var jd = JSON.stringify(data);
+        console.log(jd);
+        window.location.reload();
+    }).catch((error) => {
+        console.log(error);
+    })
+    return;
+}
+
+function delete_transaction(x) {
+    var transaction_id = x.getAttribute('data-rowid');
+    var account = x.getAttribute('data-account');
+    let params_obj = {
+        'id': transaction_id,
+        'account': account
+    }
+    let options = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    };
+    let params = new URLSearchParams(params_obj);
+    fetch("/api/transaction/delete?" + params, options)
+    .then((response) => response.json())
+    .then(data => {
+        var jd = JSON.stringify(data);
+        console.log(jd);
+        window.location.reload();
+    }).catch((error) => {
+        console.log(error);
+    })
+    return;
+}
+
+</script>
+{% endblock %}

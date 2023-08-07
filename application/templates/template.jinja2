@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+	{% block mcv %}
+	<!--
+	<link rel='shortcut icon' href='{{ url_for("static", filename="favicon.ico") }}'>
+	-->
+	{% endblock %}
+	<title>GE | Template</title>
+	<link rel="stylesheet" type='text/css' href='{{ url_for("static", filename="css/bootstrap.css") }}'>
+    <script src='{{ url_for("static", filename="js/bootstrap.js") }}'></script>
+	<link rel="stylesheet" type='text/css' href='{{ url_for("static", filename="main.css") }}'>
+	{% block head %}{% endblock %}
+<style>
+body {
+	background-image: url( {{ url_for('bp_home.static', filename='cityscape_night.png') }} );
+	background-attachment: fixed;
+}
+</style>
+</head>
+<body>
+	<div id='header-container'>
+		<div id='logo-box'>
+			<h1 id='header-text'><a href='/'>Home Page</a></h1>
+		</div>
+        <div id='oidc'>
+            <a href='account' target='_blank'>Account</a>
+        </div>
+		<div id='nav'>
+			<h3>Coming Soon!</h3>
+		</div>
+	</div>
+	{% block body %}{% endblock %}
+</body>
+</html>

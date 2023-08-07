@@ -1,0 +1,112 @@
+{% extends 'template.jinja2' %}
+{% block head %}
+<style>
+#main {
+	background-color: #FFFFFF;
+	border-radius: 10px;
+}
+</style>
+{% endblock %}
+{% block body %}
+<div id='main' class='container bg-light'>
+	<h1 class='text-center'>Account Management</h1>
+	<p class='text-center'>Add/Remove Brokerage Accounts</p>
+    <table class='table table-bordered table-striped'>
+        <tr>
+            <th>ID</th>
+            <th>Firm</th>
+            <th>Account Type</th>
+            <th>Nickname</th>
+            <th>Delete</th>
+        </tr>
+        {% for account in accounts %}
+        <tr>
+            <td>{{ account.id }}</td>
+            <td>{{ account.firm }}</td>
+            <td>{{ account.account_type }}</td>
+            <td>{{ account.nickname }}</td>
+            <td><button value='{{ account.id }}' onclick='javascript:delete_account(this)'>Delete</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if not accounts %}
+    <div class='text-center'><h3>Empty!</h3></div>
+    {% endif %}
+    <form onsubmit='javscript:add_account()'>
+    <table class='table table-bordered'>
+        <tr>
+            <td>Firm</td>
+            <td><input class='form-control' type='text' id='firm' required placeholder='Fidelity' /></td>
+        </tr>
+        <tr>
+            <td>Account Type</td>
+            <td><input class='form-control' type='text' id='account_type' required placeholder='Brokerage' /></td>
+        </tr>
+        <tr>
+            <td>Nickname</td>
+            <td><input class='form-control' type='text' id='nickname' required placeholder='Personal Account' /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input class='form-control' type='submit' value='Add Account' /></td>
+        </tr>
+    </table>
+    </form>
+</div>
+
+<script>
+
+function test() {
+    alert('test');
+}
+
+function add_account() {
+    var firm = document.getElementById('firm').value;
+    var account_type = document.getElementById('account_type').value;
+    var nickname = document.getElementById('nickname').value;
+    let params_obj = {
+        'firm': firm,
+        'account_type': account_type,
+        'nickname': nickname
+    }
+    let options = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    };
+    let params = new URLSearchParams(params_obj);
+    fetch("/api/account/set?" + params, options)
+    .then((response) => response.json())
+    .then(data => {
+        var jd = JSON.stringify(data);
+        console.log(jd);
+        window.location.reload();
+    }).catch((error) => {
+        console.log(error);
+    })
+    return;
+}
+
+function delete_account(x) {
+    var account_id = x.value;
+    let params_obj = {
+        'id': account_id
+    }
+    let options = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    };
+    let params = new URLSearchParams(params_obj);
+    fetch("/api/account/delete?" + params, options)
+    .then((response) => response.json())
+    .then(data => {
+        var jd = JSON.stringify(data);
+        console.log(jd);
+        window.location.reload();
+    }).catch((error) => {
+        console.log(error);
+    })
+    return;
+}
+
+</script>
+{% endblock %}

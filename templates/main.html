@@ -1,0 +1,171 @@
+{% include 'template.j2' %}
+{% block head %}
+{% endblock %}
+{% block body %}
+
+<div class='container'>
+    <h1 class='text-center'>Option Contract Tracker</h1>
+    <div id='transactions'>
+        <table class='table border table-striped table-bordered'>
+            <tr>
+                <th>ID</th>
+                <th>Symbol</th>
+                <th>Account</th>
+                <th>Strike</th>
+                <th>Expiration</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Contract Type</th>
+                <th>Cost Basis</th>
+                <th>Link</th>
+                <th>X</th>
+            </tr>
+        {% for row in data %}
+            <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.symbol }}</td>
+                <td>{{ row.account }}</td>
+                <td>{{ row.strike }}</td>
+                <td>{{ row.expiration }}</td>
+                <td>{{ row.tx_quantity }}</td>
+                <td>{{ row.tx_price }}</td>
+                <td>{{ row.contract_type }}</td>
+                <td>{{ row.tx_cost_basis }}</td>
+                <td>
+                    {% set strike = row.strike|int if '.0' in row.strike|string else row.strike %}
+                    {% if row.contract_type == 'CALL' %}
+                        <a href="https://optionstrat.com/build/long-call/{{ row.symbol }}/{{ row.expiration[2:] | replace('-','') }}{{ row.contract_type[0] }}{{ strike }}@{{ row.tx_cost_basis }}" target='_blank' rel='noopener noreferrer'>Link</a>
+                    {% elif row.contract_type == 'PUT' %}
+                        <a href="https://optionstrat.com/build/long-put/{{ row.symbol }}/{{ row.expiration[2:] | replace('-','') }}{{ row.contract_type[0] }}{{ strike }}@{{ row.tx_cost_basis }}" target='_blank' rel='noopener noreferrer'>Link</a>
+                    {% endif %}
+                </td>
+                <td id='{{ row.id }}' onclick='javascript:delete_row(this)'>X</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+    <form class='form'>
+        <table class='table border table-bordered'>
+            <tr>
+                <td>Symbol</td>
+                <td><input type='text' id='symbol' placeholder='Symbol: e.g. AAPL' /></td>
+            </tr>
+            <tr>
+                <td>Account</td>
+                <td>
+                    <select id='account'>
+                    {% for acc in accounts %}
+                        <option value='{{ acc[1] }} - {{ acc[2] }}'>{{ acc[1] }} - {{ acc[2] }}</option>
+                    {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Action</td>
+                <td>
+                    <select id='action'>
+                        <option selected value='BTO'>Buy to Open</option>
+                        <option value='STC'>Sell to Close</option>
+                        <option value='STO'>Sell to Open</option>
+                        <option value='BTC'>Buy to Close</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Contract Type</td>
+                <td>
+                    <select id='contract_type'>
+                        <option selected value='CALL'>Call</option>
+                        <option value='PUT'>Put</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Strike</td>
+                <td><input type='number' min='1' id='strike' placeholder='162.50' /></td>
+            </tr>
+            <tr>
+                <td>When (leave blank if today)</td>
+                <td><input type='date' id='when'/></td>
+            </tr>
+            <tr>
+                <td>Quantity</td>
+                <td><input type='number' min='1' max='500' id='quantity' placeholder='10' /></td>
+            </tr>
+            <tr>
+                <td>Expiration</td>
+                <td><input type='date' id='expiration'/></td>
+            </tr>
+            <tr>
+                <td>Transaction Total</td>
+                <td><input type='number' id='price' placeholder='2500.00' /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type='button' value='Add' onclick='javascript:add_row()' /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<script>
+function add_row() {
+    var symbol = document.getElementById('symbol').value;
+    var account = document.getElementById('account').value;
+    var action = document.getElementById('action').value;
+    var quantity = document.getElementById('quantity').value;
+    var expiration = document.getElementById('expiration').value;
+    var when = document.getElementById('when').value;
+    var strike = document.getElementById('strike').value;
+    var price = document.getElementById('price').value;
+    var contract_type = document.getElementById('contract_type').value;
+    
+    let post = {
+        'symbol': symbol,
+        'action': action,
+        'account': account,
+        'quantity': quantity,
+        'strike': strike,
+        'when': when,
+        'expiration': expiration,
+        'price': price,
+        'contract_type': contract_type
+    }
+    let options = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    };
+    let params = new URLSearchParams(post);
+    fetch("/api/add_row?" + params, options)
+    .then((response) => response.json())
+    .then(data => {
+        var jd = JSON.stringify(data);
+        console.log(jd);
+        window.location.reload();
+    }).catch((error) => {
+        console.log(error);
+    })
+}
+
+function delete_row(x) {
+    let post = {
+        'rowid': x.id,
+    }
+    let options = {
+        method: 'GET',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    };
+    let params = new URLSearchParams(post);
+    fetch("/api/delete_row?" + params, options)
+    .then((response) => response.json())
+    .then(data => {
+        var jd = JSON.stringify(data);
+        console.log(jd);
+        window.location.reload();
+    }).catch((error) => {
+        console.log(error);
+    })
+}
+</script>
+
+{% endblock %}

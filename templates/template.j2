@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% block head %}
+{% endblock %}
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+</head>
+<body>
+{% block body %}
+{% endblock %}
+</body>
+</html>

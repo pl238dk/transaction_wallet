@@ -1,0 +1,47 @@
+* {
+	margin: 0px;
+}
+#header-container {
+	/* Dark Indigo #0C2340 */
+	background-color: #0C2340;
+	/* https://www.gebrandcentral.com/article/colors/ */
+	height: 60px;
+	width: 100%;
+}
+#logo-box {
+	width: 500px;
+	height: 40px;
+	float: left;
+	padding-top: 10px;
+}
+#logo {
+	width: 40px;
+	height: 40px;
+	float: left;
+	margin-left: 20px;
+	margin-right: 19px;
+}
+#header-text {
+	float:	left;
+	line-height: 40px;
+	font-size: 18px;
+	color: #FFFFFF;
+	margin: 0px;
+}
+#nav {
+	height: 60px;
+	width: 200px;
+	float: right;
+	line-height: 55px;
+	color: #FFFFFF;
+}
+#oidc {
+	height: 60px;
+	width: 60px;
+	float: right;
+	line-height: 55px;
+	color: #FFFFFF;
+}
+#avatar {
+	border-radius: 50%;
+}
